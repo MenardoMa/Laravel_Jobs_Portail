@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\front\HomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('jobs/{slug}-{id}', [HomeController::class, 'show'])->name('job.show');
+
+Route::get('/login', [HomeController::class, 'login'])->name('auth.login');
+Route::get('/sign', [HomeController::class, 'sign'])->name('auth.sign');
