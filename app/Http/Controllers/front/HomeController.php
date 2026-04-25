@@ -19,16 +19,4 @@ class HomeController extends Controller
         return view('jobs_portail.front.show');
     }
 
-    // Login
-    public function login()
-    {
-        return view('jobs_portail.front.auth.login');
-    }
-
-    // Sign
-    public function sign()
-    {
-        return view('jobs_portail.front.auth.sign');
-    }
-
 }

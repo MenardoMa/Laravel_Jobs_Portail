@@ -10,26 +10,30 @@
                 <div class="col-md-5">
                     <div class="card shadow border-0 p-5">
                         <h1 class="h3">Register</h1>
-                        <form action="" name="signForm" id="signForm">
+                        <form method="POST" name="signForm" id="signForm">
                             <div class="mb-3">
                                 <label for="name" class="mb-2">Name*</label>
                                 <input type="text" name="name" id="name" class="form-control" placeholder="Enter Name">
+                                <div class="invalid-feedback"></div>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="mb-2">Email*</label>
-                                <input type="text" name="email" id="email" class="form-control" placeholder="Enter Email">
+                                <input type="email" name="email" id="email" class="form-control" placeholder="Enter Email">
+                                <div class="invalid-feedback"></div>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="mb-2">Password*</label>
                                 <input type="password" name="password" id="password" class="form-control"
                                     placeholder="Enter Password">
+                                <div class="invalid-feedback"></div>
                             </div>
                             <div class="mb-3">
-                                <label for="password_confirmation" class="mb-2">Confirm Password*</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation"
-                                    class="form-control" placeholder="Enter Password">
+                                <label for="confirm_password" class="mb-2">Confirm Password*</label>
+                                <input type="password" name="confirm_password" id="confirm_password" class="form-control"
+                                    placeholder="Enter Password">
+                                <div class="invalid-feedback"></div>
                             </div>
-                            <button class="btn btn-primary mt-2">Register</button>
+                            <button class="btn btn-primary mt-2" id="btn_register">Register</button>
                         </form>
                     </div>
                     <div class="mt-4 text-center">
@@ -66,8 +70,72 @@
 
 @section('custom_js')
     <script>
-        $("#signForm").submit(function (e) {
+
+        function register(e) {
+
             e.preventDefault();
+            const btn_register = $("#btn_register");
+            const originalText = btn_register.text();
+            let data = $(this).serializeArray();
+
+            // AJAX
+            $.ajax({
+                url: '{{ route('account.processRegistraction') }}',
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: data,
+                dataType: 'JSON',
+                beforeSend: function () {
+                    btn_register.prop('disabled', true)
+                        .html(`<span class="spinner-border spinner-border-sm text-light" role="status"></span> Traitement...`);
+                },
+
+                success: function (response) {
+                    if (response.status == false) {
+                        let errors = response.errors
+                        showFeedbackError(errors)
+                        return
+                    }
+                    window.location.href = '{{ route('auth.login') }}'
+                },
+
+                error: function (xhr) {
+                    console.log(xhr)
+                },
+
+                complete: function () {
+                    btn_register.prop('disabled', false).html(originalText)
+                }
+            })
+
+        }
+
+        function showFeedbackError(errors) {
+
+            $.each(errors, function (field, messages) {
+
+                let input = $("#" + field);
+                input.addClass("is-invalid");
+                let message = Array.isArray(messages)
+                    ? messages[0]
+                    : messages;
+                input.next(".invalid-feedback").html(message);
+            });
+        }
+
+        $(document).ready(function () {
+            $("#signForm").submit(register)
+
+            $(document).on('input', '#signForm input', function () {
+                if ($(this).hasClass('is-invalid')) {
+                    $(this).removeClass('is-invalid')
+                        .next('.invalid-feedback')
+                        .html('');
+                }
+            });
         })
+
     </script>
 @endsection

@@ -10,19 +10,21 @@
                 <div class="col-md-5">
                     <div class="card shadow border-0 p-5">
                         <h1 class="h3">Login</h1>
-                        <form action="account.html" method="post">
+                        <form action="" method="post" name="authenticateForm" id="authenticateForm">
                             <div class="mb-3">
-                                <label for="" class="mb-2">Email*</label>
-                                <input type="text" name="email" id="email" class="form-control"
+                                <label for="email" class="mb-2">Email*</label>
+                                <input type="email" name="email" id="email" class="form-control"
                                     placeholder="example@example.com">
+                                <div class="invalid-feedback"></div>
                             </div>
                             <div class="mb-3">
-                                <label for="" class="mb-2">Password*</label>
-                                <input type="password" name="name" id="name" class="form-control"
+                                <label for="password" class="mb-2">Password*</label>
+                                <input type="password" name="password" id="password" class="form-control"
                                     placeholder="Enter Password">
+                                <div class="invalid-feedback"></div>
                             </div>
                             <div class="justify-content-between d-flex">
-                                <button class="btn btn-primary mt-2">Login</button>
+                                <button class="btn btn-primary mt-2" id="btn_login">Login</button>
                                 <a href="forgot-password.html" class="mt-3">Forgot Password?</a>
                             </div>
                         </form>
@@ -35,27 +37,101 @@
             <div class="py-lg-5">&nbsp;</div>
         </div>
     </section>
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title pb-0" id="exampleModalLabel">Change Profile Picture</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="exampleInputEmail1" class="form-label">Profile Image</label>
-                            <input type="file" class="form-control" id="image" name="image">
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary mx-3">Update</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
 
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+@endsection
+
+@section('custom_js')
+    {{-- Flash session --}}
+    @if (session('success'))
+        <script>
+            window.flash = {
+                type: 'success',
+                message: @json(session('success'))
+            };
+        </script>
+    @endif
+    {{-- Flash session --}}
+
+    <script>
+
+        function authenticate(e) {
+            e.preventDefault()
+            const btn_login = $("#btn_login");
+            const originalText = btn_login.text();
+            let data = $(this).serializeArray();
+
+            // AJAX
+            $.ajax({
+                url: '{{ route('auth.authenticate') }}',
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: data,
+                dataType: 'JSON',
+                beforeSend: function () {
+                    btn_login.prop('disabled', true)
+                        .html(`<span class="spinner-border spinner-border-sm text-light" role="status"></span> Traitement...`);
+                },
+
+                success: function (response) {
+                    if (response.status == false) {
+                        let errors = response.errors
+                        showFeedbackError(errors)
+                        return
+                    }
+                    // window.location.href = '{{ route('auth.login') }}'
+                },
+
+                error: function (xhr) {
+                    console.log(xhr)
+                },
+
+                complete: function () {
+                    btn_login.prop('disabled', false).html(originalText)
+                }
+            })
+
+            function showFeedbackError(errors) {
+                $.each(errors, function (field, messages) {
+                    let input = $("#" + field);
+                    input.addClass("is-invalid");
+                    let message = Array.isArray(messages)
+                        ? messages[0]
+                        : messages;
+                    input.next(".invalid-feedback").html(message);
+                });
+            }
+
+
+        }
+
+        $(document).ready(function () {
+            $("#authenticateForm").submit(authenticate)
+
+            $(document).on('input', '#authenticateForm input', function () {
+                if ($(this).hasClass('is-invalid')) {
+                    $(this).removeClass('is-invalid')
+                        .next('.invalid-feedback')
+                        .html('');
+                }
+            });
+        })
+
+        // Notyf Alert
+        const notyf = new Notyf({
+            duration: 4000,
+            position: {
+                x: 'right',
+                y: 'bottom',
+            }
+        });
+
+        if (window.flash) {
+            notyf.open({
+                type: window.flash.type,
+                message: window.flash.message
+            });
+        }
+    </script>
 @endsection
