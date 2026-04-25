@@ -22,3 +22,7 @@ Route::get('/login', [AccountController::class, 'login'])->name('auth.login');
 Route::post('/login', [AccountController::class, 'authenticate'])->name('auth.authenticate');
 Route::get('/sign', [AccountController::class, 'sign'])->name('auth.sign');
 Route::post('/account-register', [AccountController::class, 'processRegistraction'])->name('account.processRegistraction');
+
+// Account
+Route::get('/account/profile', [AccountController::class, 'profile'])->name('account.profile');
+Route::post('/account-logout', [AccountController::class, 'logout'])->name('account.logout');

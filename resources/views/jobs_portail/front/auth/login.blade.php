@@ -42,11 +42,11 @@
 
 @section('custom_js')
     {{-- Flash session --}}
-    @if (session('success'))
+    @if (session('success') || session('error'))
         <script>
             window.flash = {
-                type: 'success',
-                message: @json(session('success'))
+                type: @json(session('success') ? 'success' : 'error'),
+                message: @json(session('success') ?? session('error'))
             };
         </script>
     @endif
@@ -75,12 +75,16 @@
                 },
 
                 success: function (response) {
-                    if (response.status == false) {
+                    if (response.status == false && response.type == 'validation_error') {
                         let errors = response.errors
                         showFeedbackError(errors)
                         return
+                    } else if (response.status == false && response.type == 'auth_error') {
+                        $("#password").val('')
+                        notyf.error(response.message);
+                    } else if (response.status) {
+                        window.location.href = response.redirect;
                     }
-                    // window.location.href = '{{ route('auth.login') }}'
                 },
 
                 error: function (xhr) {
@@ -103,7 +107,6 @@
                 });
             }
 
-
         }
 
         $(document).ready(function () {
@@ -118,20 +121,14 @@
             });
         })
 
-        // Notyf Alert
-        const notyf = new Notyf({
-            duration: 4000,
-            position: {
-                x: 'right',
-                y: 'bottom',
-            }
-        });
-
         if (window.flash) {
-            notyf.open({
-                type: window.flash.type,
-                message: window.flash.message
-            });
+            const type = window.flash.type || 'success';
+
+            if (type === 'success') {
+                notyf.success(window.flash.message);
+            } else {
+                notyf.error(window.flash.message);
+            }
         }
     </script>
 @endsection

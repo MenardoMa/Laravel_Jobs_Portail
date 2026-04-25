@@ -51,6 +51,12 @@ class ProcessRegistractionFormValidate extends FormRequest
         );
     }
 
+    /**
+     * 
+     * Return erreurs message
+     * 
+     * @return array{confirm_password.required: string, email.email: string, email.required: string, email.unique: string, name.required: string, password.min: string, password.required: string, password.same: string}
+     */
     public function messages(): array
     {
         return [
