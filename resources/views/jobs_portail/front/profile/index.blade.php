@@ -94,16 +94,16 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form action="" method="POST" id="pictureForm" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Profile Image</label>
                             <input type="file" class="form-control" id="image" name="image">
+                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary mx-3">Update</button>
+                            <button type="submit" class="btn btn-primary mx-3" id="btn_save_profile">Update</button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
-
                     </form>
                 </div>
             </div>
@@ -215,6 +215,55 @@
             })
         }
 
+        // Update Profi
+        function updateUserPicture(e) {
+            e.preventDefault();
+            let btn_save = $("#btn_save_profile");
+            let originalText = btn_save.text()
+            let data = new FormData(this);
+
+            // AJAX
+            $.ajax({
+                url: '{{ route('account.picture_profile') }}',
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                dataType: 'JSON',
+                contentType: false,
+                processData: false,
+                data: data,
+                beforeSend: function () {
+                    btn_save.prop('disabled', true)
+                        .html(`<span class="spinner-border spinner-border-sm text-light" role="status"></span> Traitement...`);
+                },
+                success: function (response) {
+                    if (response.status) {
+
+                        $('#image_src').attr('src', response.image);
+
+                        bootstrap.Modal.getInstance(
+                            document.getElementById('exampleModal')
+                        ).hide();
+
+                        $('#pictureForm')[0].reset();
+
+                    }
+                },
+                error: function (xhr) {
+                    let response = xhr.responseJSON;
+                    if (response.status == false && response.type == 'validation_error') {
+                        showFeedbackError(response.errors)
+                    }
+                },
+
+                complete: function () {
+                    btn_save.prop('disabled', false).html(originalText)
+                }
+            });
+
+        }
+
         // ShowFeedBackError
         function showFeedbackError(errors) {
             $.each(errors, function (field, messages) {
@@ -231,6 +280,7 @@
         $(document).ready(function () {
             $('#userForm').on('submit', updateUserInfo);
             $("#userFormPassword").on('submit', updateUserPassword);
+            $("#pictureForm").on('submit', updateUserPicture);
 
             // Saissie caracteres User general info
             $(document).on('input', '#userForm input', function () {
@@ -249,6 +299,16 @@
                         .html('');
                 }
             });
+
+            // Change image
+            $(document).on('change', '#pictureForm #image', function () {
+                if ($(this).hasClass('is-invalid')) {
+                    $(this).removeClass('is-invalid')
+                        .next('.invalid-feedback')
+                        .html('');
+                }
+            })
+
         });
     </script>
 @endsection

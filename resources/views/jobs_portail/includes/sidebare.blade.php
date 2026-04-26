@@ -1,8 +1,13 @@
 <div class="col-lg-3">
     <div class="card border-0 shadow mb-4 p-3">
         <div class="s-body text-center mt-3">
-            <img src="assets/assets/images/avatar7.png" alt="avatar" class="rounded-circle img-fluid"
-                style="width: 150px;">
+
+            @if (auth()->user()->avatar != '')
+                <img src="{{ asset('storage/profile_avatar/thumb/' . auth()->user()->avatar) }}" alt="avatar"
+                    class="rounded-circle img-fluid" id="image_src" style="width: 150px;">
+            @endif
+
+
             <h5 class="mt-3 pb-0 name" id="name_text">{{ Auth::user()->name }}</h5>
             <p class="text-muted mb-1 fs-6" id="designation_text">{{ Auth::user()->designation ?? '--' }}</p>
             <div class="d-flex justify-content-center mb-2">

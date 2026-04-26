@@ -6,10 +6,15 @@ use App\Http\Requests\AuthenticateFormRequest;
 use App\Http\Requests\ProcessRegistractionFormValidate;
 use App\Http\Requests\UpdateUserInfoForm;
 use App\Http\Requests\UpdateUserPassword;
+use App\Http\Requests\UpdateUserPicture;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class AccountController extends Controller
 {
@@ -125,6 +130,43 @@ class AccountController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Mot de passe modifié avec succès.'
+        ]);
+
+    }
+
+    public function pictureProfile(UpdateUserPicture $request)
+    {
+        $user = auth()->user();
+
+        $imageName = $user->id . '-' . time() . '.' . $request->file('image')->extension();
+        $path = $request->file('image')->storeAs('profile_avatar', $imageName, 'public');
+
+        // supprimer ancienne image
+        if ($user->avatar) {
+            Storage::disk('public')->delete('profile_avatar/' . $user->avatar);
+            Storage::disk('public')->delete('profile_avatar/thumb/' . $user->avatar);
+        }
+
+
+        // create new manager instance with desired driver
+        $manager = new ImageManager(new Driver());
+        $imagePath = storage_path('app/public/profile_avatar/' . $imageName);
+
+        $image = $manager->read($imagePath);
+
+        $thumbPath = storage_path('app/public/profile_avatar/thumb/' . $imageName);
+
+        $image->cover(150, 150)
+            ->toPng()
+            ->save($thumbPath);
+
+        // UPDATE 
+        $user->update(['avatar' => $imageName]);
+
+        return response()->json([
+            'status' => true,
+            'image' => asset('storage/profile_avatar/thumb/' . $imageName),
+            'message' => 'Image mise à jour.'
         ]);
 
     }
