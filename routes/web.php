@@ -18,11 +18,27 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('jobs/{slug}-{id}', [HomeController::class, 'show'])->name('job.show');
 
-Route::get('/login', [AccountController::class, 'login'])->name('auth.login');
 Route::post('/login', [AccountController::class, 'authenticate'])->name('auth.authenticate');
-Route::get('/sign', [AccountController::class, 'sign'])->name('auth.sign');
-Route::post('/account-register', [AccountController::class, 'processRegistraction'])->name('account.processRegistraction');
 
-// Account
-Route::get('/account/profile', [AccountController::class, 'profile'])->name('account.profile');
-Route::post('/account-logout', [AccountController::class, 'logout'])->name('account.logout');
+
+
+Route::prefix('account/')->group(function () {
+
+    // GUEST
+    Route::group(['middleware' => 'guest'], function () {
+        Route::get('register', [AccountController::class, 'sign'])->name('auth.sign');
+        Route::post('register', [AccountController::class, 'processRegistraction'])->name('account.processRegistraction');
+        Route::get('login', [AccountController::class, 'login'])->name('auth.login');
+    });
+
+    // AUTH
+
+    Route::group(['middleware' => 'auth'], function () {
+        // Account
+        Route::get('profile', [AccountController::class, 'profile'])->name('account.profile');
+        Route::put('update-profile', [AccountController::class, 'update'])->name('account.update');
+        Route::put('update-password', [AccountController::class, 'updatePassword'])->name('account.update_password');
+        Route::post('account-logout', [AccountController::class, 'logout'])->name('account.logout');
+    });
+
+});

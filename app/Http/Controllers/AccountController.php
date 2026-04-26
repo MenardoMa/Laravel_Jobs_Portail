@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AuthenticateFormRequest;
 use App\Http\Requests\ProcessRegistractionFormValidate;
+use App\Http\Requests\UpdateUserInfoForm;
+use App\Http\Requests\UpdateUserPassword;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,7 +72,61 @@ class AccountController extends Controller
     // Profil
     public function profile()
     {
-        return view('jobs_portail.front.profile.index');
+
+        $id = Auth::user()->id;
+        $user = User::where('id', $id)->first();
+
+        return view('jobs_portail.front.profile.index', [
+            'user' => $user,
+        ]);
+    }
+
+    public function update(UpdateUserInfoForm $request)
+    {
+        $user = auth()->user();
+
+        $user->update($request->validated());
+
+        return response()->json([
+            'status' => true,
+            'data' => auth()->user(),
+            'message' => 'Informations mises à jour avec succès'
+        ]);
+
+    }
+
+    public function updatePassword(UpdateUserPassword $request)
+    {
+        $user = auth()->user();
+
+        // Vérifier ancien mot de passe si ca correspond au mot de passe de la personne connecté
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'type' => 'auth_error',
+                'message' => 'Le mot de passe actuel est incorrect.'
+            ]);
+        }
+
+        // Vérifier nouveau doit etre different de l'ancien
+        if (Hash::check($request->new_password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'type' => 'auth_error',
+                'message' => 'Le nouveau mot de passe doit être différent de l\'ancien.'
+            ]);
+        }
+
+        // Update Password
+        $user->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Mot de passe modifié avec succès.'
+        ]);
+
     }
 
     // Login
