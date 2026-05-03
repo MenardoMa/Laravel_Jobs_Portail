@@ -32,7 +32,7 @@ class UpdateUserInfoForm extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->user()->id),
             ],
             'designation' => ['nullable', 'string', 'min:4'],
-            'mobile' => ['nullable', 'string', 'regex:/^\+?[0-9\s\-]{6,20}$/']
+            'mobile' => ['nullable', 'string', 'regex:/^\+?[0-9\s\-]{6,20}$/', Rule::unique('users', 'mobile')->ignore($this->user()->id)]
         ];
     }
 
@@ -73,8 +73,9 @@ class UpdateUserInfoForm extends FormRequest
             'designation.string' => 'La désignation est invalide.',
             'designation.min' => 'La désignation doit contenir au moins :min caractères.',
 
-            'mobile.string' => 'Le numéro de mobile est invalide.',
+            'mobile.string' => 'Le numéro de téléphone est invalide.',
             'mobile.regex' => 'Le numéro de téléphone doit contenir uniquement des chiffres, espaces, tirets et peut commencer par +.',
+            'mobile.unique' => 'Ce numéro de téléphone est déjà utilisé.',
         ];
     }
 }

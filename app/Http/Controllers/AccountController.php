@@ -86,6 +86,12 @@ class AccountController extends Controller
         ]);
     }
 
+    /**
+     * Update Page
+     * 
+     * @param UpdateUserInfoForm $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(UpdateUserInfoForm $request)
     {
         $user = auth()->user();
@@ -100,6 +106,12 @@ class AccountController extends Controller
 
     }
 
+    /**
+     * Update Password Action
+     * 
+     * @param UpdateUserPassword $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function updatePassword(UpdateUserPassword $request)
     {
         $user = auth()->user();
@@ -134,6 +146,12 @@ class AccountController extends Controller
 
     }
 
+    /**
+     * Create Avatar
+     * 
+     * @param UpdateUserPicture $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function pictureProfile(UpdateUserPicture $request)
     {
         $user = auth()->user();
