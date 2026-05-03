@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\front\HomeController;
+use App\Http\Controllers\JobsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,7 +18,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('jobs/{slug}-{id}', [HomeController::class, 'show'])->name('job.show');
-
 Route::post('/login', [AccountController::class, 'authenticate'])->name('auth.authenticate');
 
 
@@ -32,7 +32,6 @@ Route::prefix('account/')->group(function () {
     });
 
     // AUTH
-
     Route::group(['middleware' => 'auth'], function () {
         // Account
         Route::get('profile', [AccountController::class, 'profile'])->name('account.profile');
@@ -40,6 +39,7 @@ Route::prefix('account/')->group(function () {
         Route::put('update-password', [AccountController::class, 'updatePassword'])->name('account.update_password');
         Route::post('update-picture-profile', [AccountController::class, 'pictureProfile'])->name('account.picture_profile');
         Route::post('account-logout', [AccountController::class, 'logout'])->name('account.logout');
+        Route::get('create-job', [JobsController::class, 'create'])->name('jobs.create');
     });
 
 });
